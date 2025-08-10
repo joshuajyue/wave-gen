@@ -1,0 +1,336 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: #0a0a0a;
+    color: #ffffff;
+    overflow: hidden;
+}
+
+#container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#threejs-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+#controls {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+#keyboard {
+    position: relative;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 10px;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    height: 150px;
+    display: flex;
+    align-items: flex-end;
+}
+
+.key {
+    width: 40px;
+    height: 120px;
+    background: #ffffff;
+    border: 1px solid #ccc;
+    border-radius: 0 0 5px 5px;
+    cursor: pointer;
+    transition: all 0.1s ease;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 10px;
+    font-size: 12px;
+    color: #333;
+    user-select: none;
+    position: relative;
+    margin-right: 2px;
+}
+
+.key:last-child {
+    margin-right: 0;
+}
+
+.key.black {
+    width: 25px;
+    height: 80px;
+    background: #222;
+    color: #fff;
+    position: absolute;
+    top: 10px;
+    z-index: 2;
+    border-radius: 0 0 3px 3px;
+    border: 1px solid #000;
+    align-items: flex-end;
+    padding-bottom: 8px;
+}
+
+/* Position black keys between white keys - Extended layout */
+.key.black[data-note="C#"]:not([data-key="o"]) { left: 35px; }
+.key.black[data-note="D#"]:not([data-key="p"]) { left: 77px; }
+.key.black[data-note="F#"] { left: 161px; }
+.key.black[data-note="G#"] { left: 203px; }
+.key.black[data-note="A#"] { left: 245px; }
+
+/* Second octave black keys - positioned relative to extended white keys */
+.key.black[data-key="o"] { left: 329px; } /* C# between K and L (294 + 35) */
+.key.black[data-key="p"] { left: 371px; } /* D# between L and ; (294 + 77) */
+
+.key:hover {
+    background: #f0f0f0;
+    transform: translateY(-2px);
+}
+
+.key.black:hover {
+    background: #555;
+}
+
+.key.active {
+    background: #4facfe;
+    color: white;
+    transform: translateY(2px);
+}
+
+.key.black.active {
+    background: #667eea;
+}
+
+#info {
+    text-align: center;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 15px;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+}
+
+#info h3 {
+    margin-bottom: 5px;
+    color: #4facfe;
+}
+
+#info p {
+    font-size: 14px;
+    opacity: 0.8;
+    margin: 2px 0;
+}
+
+/* Settings Panel */
+#settings-panel {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+#settings-toggle {
+    padding: 15px;
+    cursor: pointer;
+    font-size: 18px;
+    text-align: center;
+    user-select: none;
+    transition: transform 0.2s ease;
+}
+
+#settings-toggle:hover {
+    transform: scale(1.1);
+}
+
+#settings-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+    padding: 0 20px;
+}
+
+#settings-panel:not(.collapsed) #settings-content {
+    max-height: 500px;
+    padding: 0 20px 20px;
+    overflow-y: auto;
+}
+
+#settings-content h4 {
+    margin-bottom: 15px;
+    color: #4facfe;
+    font-size: 16px;
+}
+
+.setting-item {
+    margin-bottom: 10px;
+}
+
+.setting-item label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+    user-select: none;
+}
+
+.setting-item input[type="checkbox"] {
+    margin-right: 10px;
+    width: 16px;
+    height: 16px;
+    accent-color: #4facfe;
+    cursor: pointer;
+}
+
+.setting-item label:hover {
+    color: #4facfe;
+}
+
+/* Settings Panel Categories */
+.setting-category {
+    margin-bottom: 20px;
+}
+
+.setting-category h5 {
+    color: #667eea;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 5px;
+}
+
+.setting-item input[type="range"] {
+    width: 80px;
+    margin: 0 8px;
+    accent-color: #4facfe;
+}
+
+.setting-item span {
+    font-size: 12px;
+    color: #aaa;
+    min-width: 30px;
+    display: inline-block;
+}
+
+/* Stats Panel */
+#stats-panel {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: rgba(0, 0, 0, 0.9);
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    min-width: 250px;
+    max-width: 300px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    z-index: 999;
+    transition: opacity 0.3s ease;
+}
+
+#stats-panel.hidden {
+    display: none;
+}
+
+#stats-panel h4 {
+    color: #4facfe;
+    margin-bottom: 15px;
+    font-size: 14px;
+    text-align: center;
+}
+
+.stat-group {
+    margin-bottom: 15px;
+}
+
+.stat-group h5 {
+    color: #667eea;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 3px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+    color: #ccc;
+}
+
+.stat-item span {
+    color: #4facfe;
+    font-weight: bold;
+}
+
+/* Root key setting - initially hidden */
+#root-key-setting {
+    opacity: 0.5;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+#root-key-setting.enabled {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#root-key-select {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-left: 10px;
+    font-size: 12px;
+}
+
+#root-key-select option {
+    background: #1a1a1a;
+    color: white;
+}
+
+/* Add some spacing for the new settings sections */
+.setting-category + .setting-category {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .key {
+        width: 35px;
+        height: 100px;
+    }
+    
+    .key.black {
+        width: 20px;
+        height: 65px;
+        margin: 0 -10px;
+    }
+    
+    #info {
+        font-size: 12px;
+    }
+}

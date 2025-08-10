@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wave Generator - 3D Lissajous Renderer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="container">
+        <canvas id="threejs-canvas"></canvas>
+        
+        <!-- Settings Panel -->
+        <div id="settings-panel" class="collapsed">
+            <div id="settings-toggle">⚙️</div>
+            <div id="settings-content">
+                <h4>Settings</h4>
+                
+                <div class="setting-category">
+                    <h5>Visual</h5>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="particles-toggle" checked>
+                            Show Particles
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="setting-category">
+                    <h5>Camera</h5>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="auto-rotate-toggle" checked>
+                            Auto Rotate
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            Auto Rotate Speed
+                            <input type="range" id="auto-rotate-speed" min="0.1" max="5" step="0.1" value="1">
+                            <span id="auto-rotate-speed-value">1.0</span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            Mouse Sensitivity
+                            <input type="range" id="mouse-sensitivity" min="1" max="10" step="0.5" value="5">
+                            <span id="mouse-sensitivity-value">5.0</span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            Zoom Speed
+                            <input type="range" id="zoom-speed" min="0.1" max="2" step="0.1" value="1">
+                            <span id="zoom-speed-value">1.0</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="setting-category">
+                    <h5>Curve Parameters</h5>
+                    <div class="setting-item">
+                        <label>
+                            t Range (π multiplier)
+                            <input type="range" id="t-range" min="1" max="16" step="0.5" value="4">
+                            <span id="t-range-value">4.0</span>π
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="setting-category">
+                    <h5>Audio Tuning</h5>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="just-intonation-toggle">
+                            Just Intonation
+                        </label>
+                    </div>
+                    <div class="setting-item" id="root-key-setting">
+                        <label>
+                            Root Key
+                            <select id="root-key-select">
+                                <option value="0">C</option>
+                                <option value="1">C#/Db</option>
+                                <option value="2">D</option>
+                                <option value="3">D#/Eb</option>
+                                <option value="4">E</option>
+                                <option value="5">F</option>
+                                <option value="6">F#/Gb</option>
+                                <option value="7">G</option>
+                                <option value="8">G#/Ab</option>
+                                <option value="9">A</option>
+                                <option value="10">A#/Bb</option>
+                                <option value="11">B</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="setting-category">
+                    <h5>Debug</h5>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="stats-toggle">
+                            Show Stats for Nerds
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Stats Panel -->
+        <div id="stats-panel" class="hidden">
+            <h4>Stats for Nerds</h4>
+            <div class="stats-content">
+                <div class="stat-group">
+                    <h5>Audio</h5>
+                    <div class="stat-item">Active Notes: <span id="stat-notes">0</span></div>
+                    <div class="stat-item">Audio Context: <span id="stat-audio-state">suspended</span></div>
+                    <div class="stat-item">Sample Rate: <span id="stat-sample-rate">44100</span> Hz</div>
+                    <div class="stat-item">Tuning: <span id="stat-tuning">Equal Temperament</span></div>
+                    <div class="stat-item">Root Key: <span id="stat-root-key">A</span></div>
+                </div>
+                <div class="stat-group">
+                    <h5>Rendering</h5>
+                    <div class="stat-item">FPS: <span id="stat-fps">60</span></div>
+                    <div class="stat-item">Frame Time: <span id="stat-frame-time">16.7</span> ms</div>
+                    <div class="stat-item">Triangles: <span id="stat-triangles">0</span></div>
+                    <div class="stat-item">Curves: <span id="stat-curves">0</span></div>
+                    <div class="stat-item">t Range: <span id="stat-t-range">4.0</span>π</div>
+                </div>
+                <div class="stat-group">
+                    <h5>Camera</h5>
+                    <div class="stat-item">Position: <span id="stat-camera-pos">0, 0, 0</span></div>
+                    <div class="stat-item">Distance: <span id="stat-camera-dist">25</span></div>
+                    <div class="stat-item">Theta: <span id="stat-camera-theta">0.79</span></div>
+                    <div class="stat-item">Phi: <span id="stat-camera-phi">0.79</span></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="controls">
+            <div id="keyboard"></div>
+            <div id="info">
+                <h3>Wave Generator</h3>
+                <p>Keys A-' to play notes • Z/X to change octave</p>
+                <p>Spacebar to toggle sustain</p>
+                <p>Drag to look around • Mouse wheel to zoom</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Project scripts -->
+    <script src="js/audio.js"></script>
+    <script src="js/lissajous.js"></script>
+    <script src="js/keyboard.js"></script>
+    <script src="js/controls.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
