@@ -113,12 +113,17 @@ class CameraControls {
         const deltaX = this.mousePosition.x - this.lastMousePosition.x;
         const deltaY = this.mousePosition.y - this.lastMousePosition.y;
         
-        // Update angles with no constraints - completely free rotation
+        // Update angles
         this.theta -= deltaX * this.rotateSpeed;
         this.phi += deltaY * this.rotateSpeed;
         
         // Keep theta in reasonable range to avoid floating point issues
         this.theta = this.theta % (Math.PI * 2);
+        
+        // Constrain phi to prevent gimbal lock and camera flipping
+        // Keep phi between a small epsilon and PI - epsilon
+        const epsilon = 0.001;
+        this.phi = THREE.MathUtils.clamp(this.phi, epsilon, Math.PI - epsilon);
         
         this.lastMousePosition = { ...this.mousePosition };
         this.update();

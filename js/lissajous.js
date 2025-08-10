@@ -3,6 +3,7 @@ class LissajousGenerator {
     constructor() {
         this.activeCurves = new Map(); // Map note combinations to curve objects
         this.tRange = 4; // Default t range (4π)
+        this.rotationEnabled = true; // Default curve rotation enabled
     }
     
     // Set the t range for curve generation
@@ -10,6 +11,11 @@ class LissajousGenerator {
         this.tRange = range;
         // Regenerate all active curves with new t range
         this.regenerateActiveCurves();
+    }
+    
+    // Set curve rotation enabled/disabled
+    setRotationEnabled(enabled) {
+        this.rotationEnabled = enabled;
     }
     
     // Regenerate all active curves (called when t range changes)
@@ -128,10 +134,12 @@ class LissajousGenerator {
     animateCurve(curveData, time) {
         const { mesh, ratios } = curveData;
         
-        // Rotate the curve based on frequency ratios
-        mesh.rotation.x = time * 0.1 * ratios.x;
-        mesh.rotation.y = time * 0.15 * ratios.y;
-        mesh.rotation.z = time * 0.05 * ratios.z;
+        // Rotate the curve based on frequency ratios (if enabled)
+        if (this.rotationEnabled) {
+            mesh.rotation.x = time * 0.1 * ratios.x;
+            mesh.rotation.y = time * 0.15 * ratios.y;
+            mesh.rotation.z = time * 0.05 * ratios.z;
+        }
         
         // Subtle breathing effect
         const breathe = 1 + 0.05 * Math.sin(time * 2);

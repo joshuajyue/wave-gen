@@ -1,60 +1,68 @@
 # Wave Generator - 3D Lissajous Renderer
 
-A interactive 3D Lissajous curve renderer with a virtual keyboard for playing chords. Users can drag to look around and explore beautiful wave patterns in 3D space.
+An interactive 3D Lissajous curve renderer with a virtual piano keyboard. Play notes and chords to generate beautiful wave patterns in 3D space that you can explore with mouse controls.
 
 ## Features
 
-- 🌊 Real-time 3D Lissajous curve generation
-- 🎹 Interactive keyboard spanning two octaves (A-S-D-F-G-H-J for first octave, K-L-;-' for extended range)
-- 🖱️ Mouse drag controls for 3D navigation
-- 🎵 Audio synthesis with visual feedback
-- ✨ Beautiful wave pattern visualization
+- Real-time 3D Lissajous curve generation based on played notes
+- Virtual piano keyboard (supports multiple octaves and sustain)
+- 3D camera controls with mouse/trackball navigation
+- Web Audio synthesis with equal temperament and just intonation options
+- Configurable curve parameters and visual settings
+- Debug stats panel for performance monitoring
 
-## How to Build
+## Controls
 
-### Prerequisites
-- Modern web browser with WebGL support
-- Basic knowledge of JavaScript, HTML5 Canvas, and Web Audio API
+**Keyboard:**
+- `A-J` keys: Play notes (C through B)
+- `K-L-;-'` keys: Extended octave
+- `Z/X`: Change octaves
+- `Space`: Toggle sustain mode
 
-### Tech Stack
-- **Three.js** - 3D rendering and scene management
-- **Web Audio API** - Audio synthesis and processing
-- **HTML5 Canvas** - 2D keyboard interface
-- **JavaScript ES6+** - Core logic
+**Mouse:**
+- Drag to rotate camera
+- Scroll to zoom
+- Settings panel (top-right) for advanced options
 
-### Project Structure
+## How to Run
+
+Just open `index.html` in a modern web browser. No build process required.
+
+## Technical Details
+
+**Built with:**
+- Three.js for 3D rendering
+- Web Audio API for sound synthesis
+- Vanilla JavaScript (no framework dependencies)
+
+**File Structure:**
 ```
 wave-gen/
-├── index.html          # Main HTML file
-├── style.css           # Styling
+├── index.html          # Main page
+├── style.css           # Styles
 ├── js/
-│   ├── main.js         # Entry point and scene setup
-│   ├── lissajous.js    # Lissajous curve generation
-│   ├── keyboard.js     # Virtual keyboard logic
-│   ├── audio.js        # Web Audio API handling
-│   └── controls.js     # Mouse/touch controls
+│   ├── main.js         # App initialization and scene setup
+│   ├── lissajous.js    # Curve math and generation
+│   ├── keyboard.js     # Piano keyboard logic
+│   ├── audio.js        # Audio engine and synthesis
+│   └── controls.js     # Camera controls
 └── README.md
 ```
 
-### Getting Started
+## Lissajous Curves
 
-1. **Set up the basic HTML structure** with Three.js
-2. **Create the 3D scene** with camera, lights, and renderer
-3. **Implement Lissajous curve math** using parametric equations
-4. **Build the virtual keyboard** with chord detection
-5. **Connect audio synthesis** to visual parameters
-6. **Add mouse controls** for camera movement
+The curves are generated using parametric equations:
+- `x = sin(ratio_x * t)`
+- `y = sin(ratio_y * t + π/4)`  
+- `z = sin(ratio_z * t + π/2)`
 
-### Key Concepts
+Where the ratios are derived from the frequency relationships of the notes being played. Different chord combinations create different curve patterns.
 
-#### Lissajous Curves
-Parametric equations: `x = A*sin(at + δ)`, `y = B*sin(bt)`, `z = C*sin(ct + φ)`
-- Adjust frequency ratios (a:b:c) for different patterns
-- Phase differences (δ, φ) create rotation effects
-- Amplitudes (A, B, C) control curve size
+## Audio Features
 
-#### Audio-Visual Mapping
-- Chord frequencies → curve parameters
-- Note velocity → curve brightness/thickness
-- Harmonic content → color variations
-- Time → curve animation and trail effects
+- **Equal Temperament**: Standard piano tuning (default)
+- **Just Intonation**: Pure harmonic ratios for cleaner intervals
+- **Sustain Mode**: Hold notes even after releasing keys
+- **Extended Range**: MIDI notes C0 to F9
+
+The visual curves update in real-time as you play, with each combination of notes creating unique 3D shapes.

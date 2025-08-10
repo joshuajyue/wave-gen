@@ -8,6 +8,7 @@ class WaveGenerator {
         this.isAnimating = false;
         this.autoRotateEnabled = true;
         this.autoRotateSpeed = 0.001;
+        this.curveRotationEnabled = true;
         
         // Stats tracking
         this.stats = {
@@ -123,15 +124,23 @@ class WaveGenerator {
         // Keyboard shortcuts
         document.addEventListener('keydown', (event) => {
             switch (event.key.toLowerCase()) {
+                case 'escape':
+                    event.preventDefault();
+                    this.clearAllNotes();
+                    break;
                 case 'r':
                     this.controls.reset();
                     break;
                 case 'c':
+                    event.preventDefault();
+                    this.toggleBothRotations();
+                    break;
+                case 'v':
                     this.clearCurves();
                     break;
-                case ' ':
+                case 'b':
                     event.preventDefault();
-                    this.toggleAutoRotate();
+                    this.clearAllNotes();
                     break;
             }
         });
@@ -161,6 +170,7 @@ class WaveGenerator {
         const statsToggle = document.getElementById('stats-toggle');
         const tRange = document.getElementById('t-range');
         const tRangeValue = document.getElementById('t-range-value');
+        const curveRotationToggle = document.getElementById('curve-rotation-toggle');
         const justIntonationToggle = document.getElementById('just-intonation-toggle');
         const rootKeySetting = document.getElementById('root-key-setting');
         const rootKeySelect = document.getElementById('root-key-select');
@@ -222,6 +232,14 @@ class WaveGenerator {
             tRangeValue.textContent = value.toFixed(1);
             if (window.lissajousGenerator) {
                 window.lissajousGenerator.setTRange(value);
+            }
+        });
+        
+        // Handle curve rotation toggle
+        curveRotationToggle.addEventListener('change', (e) => {
+            this.curveRotationEnabled = e.target.checked;
+            if (window.lissajousGenerator) {
+                window.lissajousGenerator.setRotationEnabled(this.curveRotationEnabled);
             }
         });
         
@@ -302,8 +320,8 @@ class WaveGenerator {
             window.lissajousGenerator.updateCurves(currentFrequencies, this.scene);
         }
         
-        // Rotate particle field slowly
-        if (this.particleSystem) {
+        // Rotate particle field slowly (only if auto-rotate is enabled)
+        if (this.particleSystem && this.autoRotateEnabled) {
             this.particleSystem.rotation.y += 0.001;
             this.particleSystem.rotation.x += 0.0005;
         }
@@ -319,7 +337,36 @@ class WaveGenerator {
     
     toggleAutoRotate() {
         this.autoRotateEnabled = !this.autoRotateEnabled;
+        // Sync the checkbox state
+        const autoRotateToggle = document.getElementById('auto-rotate-toggle');
+        if (autoRotateToggle) {
+            autoRotateToggle.checked = this.autoRotateEnabled;
+        }
         console.log('Auto-rotate:', this.autoRotateEnabled ? 'ON' : 'OFF');
+    }
+    
+    toggleBothRotations() {
+        // Toggle both auto-rotate and curve rotation
+        this.autoRotateEnabled = !this.autoRotateEnabled;
+        this.curveRotationEnabled = !this.curveRotationEnabled;
+        
+        // Sync the checkbox states
+        const autoRotateToggle = document.getElementById('auto-rotate-toggle');
+        const curveRotationToggle = document.getElementById('curve-rotation-toggle');
+        
+        if (autoRotateToggle) {
+            autoRotateToggle.checked = this.autoRotateEnabled;
+        }
+        if (curveRotationToggle) {
+            curveRotationToggle.checked = this.curveRotationEnabled;
+        }
+        
+        // Update the lissajous generator
+        if (window.lissajousGenerator) {
+            window.lissajousGenerator.setRotationEnabled(this.curveRotationEnabled);
+        }
+        
+        console.log('Rotations:', this.autoRotateEnabled ? 'ON' : 'OFF');
     }
     
     clearCurves() {
@@ -327,6 +374,12 @@ class WaveGenerator {
             window.lissajousGenerator.clear(this.scene);
         }
         console.log('Curves cleared');
+    }
+    
+    clearAllNotes() {
+        if (window.virtualKeyboard) {
+            window.virtualKeyboard.clearAllNotes();
+        }
     }
     
     // Create a demo curve for testing

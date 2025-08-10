@@ -210,16 +210,29 @@ class VirtualKeyboard {
         if (newOctave >= 0 && newOctave <= 7) {
             this.currentOctave = newOctave;
             
-            // Always clear physically pressed keys and visual states
+            // Only clear the notes that are currently physically pressed
+            // This preserves sustained notes from previous sustain sessions
+            for (const noteKey of this.physicallyPressed) {
+                // Parse the note key (e.g., "C4" -> note="C", octave=4)
+                const matches = noteKey.match(/^([A-G]#?)(\d+)$/);
+                if (matches) {
+                    const [, note, octave] = matches;
+                    const midiNote = this.noteToMidi[note][parseInt(octave)];
+                    if (midiNote) {
+                        const arrayIndex = midiNote - 12;
+                        // Only clear if sustain is OFF (otherwise keep sustained notes)
+                        if (!this.sustainMode) {
+                            this.keyStates[arrayIndex] = false;
+                        }
+                    }
+                }
+            }
+            
+            // Clear physically pressed keys and visual states
             this.physicallyPressed.clear();
             this.keys.forEach(key => {
                 key.element.classList.remove('active');
             });
-            
-            // Only clear audio states if sustain is OFF
-            if (!this.sustainMode) {
-                this.keyStates.fill(false);
-            }
             
             this.updateVisualization();
         }
@@ -228,18 +241,32 @@ class VirtualKeyboard {
     toggleSustain() {
         this.sustainMode = !this.sustainMode;
         
-        if (!this.sustainMode) {
-            // When sustain is turned OFF, set all key states to false
-            this.keyStates.fill(false);
-            // Clear physically pressed set
-            this.physicallyPressed.clear();
-            // Remove all visual active states
-            this.keys.forEach(key => {
-                key.element.classList.remove('active');
-            });
-            // Update visualization
-            this.updateVisualization();
+        // Update sustain indicator
+        const sustainIndicator = document.getElementById('sustain-indicator');
+        if (sustainIndicator) {
+            if (this.sustainMode) {
+                sustainIndicator.classList.remove('hidden');
+            } else {
+                sustainIndicator.classList.add('hidden');
+            }
         }
+        
+        console.log('Sustain mode:', this.sustainMode ? 'ON' : 'OFF');
+    }
+    
+    // Clear all playing notes (new method for 'B' key)
+    clearAllNotes() {
+        // Set all key states to false
+        this.keyStates.fill(false);
+        // Clear physically pressed set
+        this.physicallyPressed.clear();
+        // Remove all visual active states
+        this.keys.forEach(key => {
+            key.element.classList.remove('active');
+        });
+        // Update visualization
+        this.updateVisualization();
+        console.log('All notes cleared');
     }
     
     // Get the current key states for audio engine

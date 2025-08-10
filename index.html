@@ -66,6 +66,12 @@
                             <span id="t-range-value">4.0</span>π
                         </label>
                     </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="curve-rotation-toggle" checked>
+                            Curve Rotation
+                        </label>
+                    </div>
                 </div>
                 
                 <div class="setting-category">
@@ -141,12 +147,19 @@
         
         <div id="controls">
             <div id="keyboard"></div>
-            <div id="info">
-                <h3>Wave Generator</h3>
-                <p>Keys A-' to play notes • Z/X to change octave</p>
-                <p>Spacebar to toggle sustain</p>
-                <p>Drag to look around • Mouse wheel to zoom</p>
-            </div>
+        </div>
+        
+        <!-- Info Panel (moved to top-left area) -->
+        <div id="info">
+            <h3>Wave Generator</h3>
+            <p>Keys A-' to play notes • Z/X to change octave</p>
+            <p>Spacebar to toggle sustain • B/Esc to clear notes</p>
+            <p>C to toggle rotations • Drag to look around</p>
+        </div>
+        
+        <!-- Sustain Indicator -->
+        <div id="sustain-indicator" class="hidden">
+            <span>SUSTAIN</span>
         </div>
     </div>
 
