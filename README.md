@@ -58,5 +58,3 @@ Parametric equations: `x = A*sin(at + δ)`, `y = B*sin(bt)`, `z = C*sin(ct + φ)
 - Note velocity → curve brightness/thickness
 - Harmonic content → color variations
 - Time → curve animation and trail effects
-
-Want me to create the initial code files to get you started?
