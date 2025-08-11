@@ -155,7 +155,7 @@ class AudioEngine {
         const frequency = this.midiToFrequency(midiNote);
         const oscillator = this.audioContext.createOscillator();
         const gainNode = this.audioContext.createGain();
-        
+    
         oscillator.type = 'sine';
         oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
         
@@ -173,7 +173,7 @@ class AudioEngine {
 
     // Start playing a MIDI note (called by keyboard)
     startNote(midiNote) {
-        this.playNote(midiNote, 0.5);
+        this.playNote(midiNote, 0.1);
     }
 
     // Stop all currently playing notes
@@ -187,9 +187,15 @@ class AudioEngine {
     stopNote(midiNote) {
         if (this.oscillators.has(midiNote)) {
             const { oscillator, gainNode } = this.oscillators.get(midiNote);
-            gainNode.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + 0.005);
-            oscillator.stop(this.audioContext.currentTime + 0.005);
+            const releaseTime = 0.03; // 30ms fade to avoid pops
+            const stopTime = this.audioContext.currentTime + releaseTime;
+            // Remove from map immediately to prevent stacking
             this.oscillators.delete(midiNote);
+            gainNode.gain.cancelScheduledValues(this.audioContext.currentTime);
+            gainNode.gain.setValueAtTime(gainNode.gain.value, this.audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0, stopTime);
+            oscillator.stop(stopTime);
+            // No need to delete from map after fade, already removed
         }
     }
     

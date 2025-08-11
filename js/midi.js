@@ -554,7 +554,8 @@ class MIDIPlayer {
     processEvent(event) {
         switch (event.type) {
             case 'noteOn':
-                this.audioEngine.playNote(event.note, event.velocity / 127);
+                // Always scale velocity to 20% of max
+                this.audioEngine.playNote(event.note, 0.2 * (event.velocity / 127));
                 this.activeNotes.add(event.note);
                 
                 // Sync with Lissajous visualization: set keyStates for note
