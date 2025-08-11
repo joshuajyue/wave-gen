@@ -136,7 +136,8 @@ class WaveGenerator {
                     this.toggleBothRotations();
                     break;
                 case 'v':
-                    this.clearCurves();
+                    event.preventDefault();
+                    this.toggleUI();
                     break;
                 case 'b':
                     event.preventDefault();
@@ -151,6 +152,55 @@ class WaveGenerator {
         
         // Setup settings panel
         this.setupSettingsPanel();
+        
+        // Initialize MIDI controls
+        this.setupMIDIControls();
+        
+        // Setup UI toggle
+        this.setupUIToggle();
+    }
+    
+    setupUIToggle() {
+        const uiToggle = document.getElementById('ui-toggle');
+        if (uiToggle) {
+            uiToggle.addEventListener('click', () => {
+                this.toggleUI();
+            });
+        }
+    }
+    
+    toggleUI() {
+        document.body.classList.toggle('ui-hidden');
+        
+        // Update the button icon
+        const uiToggle = document.getElementById('ui-toggle');
+        if (uiToggle) {
+            const svg = uiToggle.querySelector('svg');
+            const isHidden = document.body.classList.contains('ui-hidden');
+            
+            if (isHidden) {
+                // Show "eye-off" icon
+                svg.innerHTML = `
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                `;
+                uiToggle.title = "Show UI (V key)";
+            } else {
+                // Show "eye" icon
+                svg.innerHTML = `
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                `;
+                uiToggle.title = "Hide UI (V key)";
+            }
+        }
+    }
+    
+    setupMIDIControls() {
+        // Initialize MIDI controls when available
+        if (window.MIDIControls) {
+            this.midiControls = new window.MIDIControls();
+        }
     }
     
     setupSettingsPanel() {
@@ -243,6 +293,94 @@ class WaveGenerator {
             }
         });
         
+        // New Lissajous controls
+        const lissajousRotationToggle = document.getElementById('lissajous-rotation-toggle');
+        const lissajousBreathingToggle = document.getElementById('lissajous-breathing-toggle');
+        const lissajousGlowToggle = document.getElementById('lissajous-glow-toggle');
+        const lissajousThickness = document.getElementById('lissajous-thickness');
+        const lissajousThicknessValue = document.getElementById('lissajous-thickness-value');
+        const lissajousGlowIntensity = document.getElementById('lissajous-glow-intensity');
+        const lissajousGlowIntensityValue = document.getElementById('lissajous-glow-intensity-value');
+        const lissajousColorMode = document.getElementById('lissajous-color-mode');
+        const monoColorControls = document.getElementById('mono-color-controls');
+        const lissajousMonoHue = document.getElementById('lissajous-mono-hue');
+        const lissajousMonoHueValue = document.getElementById('lissajous-mono-hue-value');
+        
+        // Lissajous rotation toggle
+        if (lissajousRotationToggle) {
+            lissajousRotationToggle.addEventListener('change', (e) => {
+                if (window.lissajousGenerator) {
+                    window.lissajousGenerator.setRotationEnabled(e.target.checked);
+                }
+            });
+        }
+        
+        // Lissajous breathing toggle
+        if (lissajousBreathingToggle) {
+            lissajousBreathingToggle.addEventListener('change', (e) => {
+                if (window.lissajousGenerator) {
+                    window.lissajousGenerator.setBreathingEnabled(e.target.checked);
+                }
+            });
+        }
+        
+        // Lissajous glow toggle
+        if (lissajousGlowToggle) {
+            lissajousGlowToggle.addEventListener('change', (e) => {
+                if (window.lissajousGenerator) {
+                    window.lissajousGenerator.setGlowEnabled(e.target.checked);
+                }
+            });
+        }
+        
+        // Line thickness
+        if (lissajousThickness && lissajousThicknessValue) {
+            lissajousThickness.addEventListener('input', (e) => {
+                const value = parseInt(e.target.value);
+                lissajousThicknessValue.textContent = value;
+                if (window.lissajousGenerator) {
+                    window.lissajousGenerator.setLineThickness(value);
+                }
+            });
+        }
+        
+        // Glow intensity
+        if (lissajousGlowIntensity && lissajousGlowIntensityValue) {
+            lissajousGlowIntensity.addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                lissajousGlowIntensityValue.textContent = value.toFixed(1);
+                if (window.lissajousGenerator) {
+                    window.lissajousGenerator.setGlowIntensity(value);
+                }
+            });
+        }
+        
+        // Color mode
+        if (lissajousColorMode && monoColorControls) {
+            lissajousColorMode.addEventListener('change', (e) => {
+                const mode = e.target.value;
+                if (mode === 'mono') {
+                    monoColorControls.style.display = 'block';
+                } else {
+                    monoColorControls.style.display = 'none';
+                }
+                if (window.lissajousGenerator) {
+                    window.lissajousGenerator.setColorMode(mode);
+                }
+            });
+        }
+        
+        // Mono color hue
+        if (lissajousMonoHue && lissajousMonoHueValue) {
+            lissajousMonoHue.addEventListener('input', (e) => {
+                const hue = parseInt(e.target.value);
+                lissajousMonoHueValue.textContent = hue + '°';
+                if (window.lissajousGenerator) {
+                    window.lissajousGenerator.setMonoColor(hue / 360, 0.8, 0.6);
+                }
+            });
+        }
+        
         // Handle just intonation toggle
         justIntonationToggle.addEventListener('change', (e) => {
             const enabled = e.target.checked;
@@ -264,10 +402,16 @@ class WaveGenerator {
             }
         });
         
-        // Close settings when clicking outside
+        // Close panels when clicking outside
         document.addEventListener('click', (e) => {
+            const midiPanel = document.getElementById('midi-panel');
+            
             if (!settingsPanel.contains(e.target)) {
                 settingsPanel.classList.add('collapsed');
+            }
+            
+            if (midiPanel && !midiPanel.contains(e.target)) {
+                midiPanel.classList.add('collapsed');
             }
         });
     }

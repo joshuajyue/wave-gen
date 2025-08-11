@@ -12,7 +12,19 @@
         
         <!-- Settings Panel -->
         <div id="settings-panel" class="collapsed">
-            <div id="settings-toggle">⚙️</div>
+            <div id="settings-toggle">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="2"></circle>
+                    <path d="M12 1v6"></path>
+                    <path d="M12 17v6"></path>
+                    <path d="M4.93 4.93l4.24 4.24"></path>
+                    <path d="M14.83 14.83l4.24 4.24"></path>
+                    <path d="M1 12h6"></path>
+                    <path d="M17 12h6"></path>
+                    <path d="M4.93 19.07l4.24-4.24"></path>
+                    <path d="M14.83 9.17l4.24-4.24"></path>
+                </svg>
+            </div>
             <div id="settings-content">
                 <h4>Settings</h4>
                 
@@ -104,12 +116,128 @@
                 </div>
                 
                 <div class="setting-category">
+                    <h5>Lissajous</h5>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="lissajous-rotation-toggle" checked>
+                            Rotation
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="lissajous-breathing-toggle" checked>
+                            Breathing Animation
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="lissajous-glow-toggle">
+                            Glow Effect
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label for="lissajous-thickness">Line Thickness:</label>
+                        <input type="range" id="lissajous-thickness" min="1" max="10" value="2" step="1">
+                        <span id="lissajous-thickness-value">2</span>
+                    </div>
+                    <div class="setting-item">
+                        <label for="lissajous-glow-intensity">Glow Intensity:</label>
+                        <input type="range" id="lissajous-glow-intensity" min="0" max="2" value="1" step="0.1">
+                        <span id="lissajous-glow-intensity-value">1.0</span>
+                    </div>
+                    <div class="setting-item">
+                        <label for="lissajous-color-mode">Color Mode:</label>
+                        <select id="lissajous-color-mode">
+                            <option value="multi">Multi-Color</option>
+                            <option value="mono">Mono-Color</option>
+                        </select>
+                    </div>
+                    <div class="setting-item" id="mono-color-controls" style="display: none;">
+                        <label for="lissajous-mono-hue">Mono Color Hue:</label>
+                        <input type="range" id="lissajous-mono-hue" min="0" max="360" value="216" step="1">
+                        <span id="lissajous-mono-hue-value">216°</span>
+                    </div>
+                </div>
+                
+                <div class="setting-category">
                     <h5>Debug</h5>
                     <div class="setting-item">
                         <label>
                             <input type="checkbox" id="stats-toggle">
                             Show Stats for Nerds
                         </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- MIDI Panel -->
+        <div id="midi-panel" class="collapsed">
+            <div id="midi-toggle">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                    <path d="M6 8h.01"></path>
+                    <path d="M10 8h.01"></path>
+                    <path d="M14 8h.01"></path>
+                    <path d="M18 8h.01"></path>
+                    <path d="M6 12h.01"></path>
+                    <path d="M10 12h.01"></path>
+                    <path d="M14 12h.01"></path>
+                    <path d="M18 12h.01"></path>
+                    <rect x="2" y="17" width="4" height="4" fill="currentColor"></rect>
+                    <rect x="6" y="17" width="4" height="4" fill="currentColor"></rect>
+                    <rect x="10" y="17" width="4" height="4" fill="currentColor"></rect>
+                    <rect x="14" y="17" width="4" height="4" fill="currentColor"></rect>
+                    <rect x="18" y="17" width="4" height="4" fill="currentColor"></rect>
+                </svg>
+            </div>
+            <div id="midi-content">
+                <h4>MIDI Player</h4>
+                
+                <div class="midi-category">
+                    <div class="midi-item">
+                        <label>
+                            Load MIDI File
+                            <input type="file" id="midi-file-input" accept=".mid,.midi" style="margin-top: 5px;">
+                        </label>
+                    </div>
+                    
+                    <div class="midi-item" id="midi-info" style="display: none;">
+                        <div id="midi-track-info"></div>
+                    </div>
+                    
+                    <div class="midi-item" id="midi-track-select" style="display: none;">
+                        <label for="midi-track-dropdown">Track:</label>
+                        <select id="midi-track-dropdown">
+                            <option value="all">All Tracks</option>
+                        </select>
+                    </div>
+                    
+                    <div class="midi-item" id="midi-controls" style="display: none;">
+                        <div class="midi-buttons">
+                            <button id="midi-play" class="midi-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polygon points="5,3 19,12 5,21"></polygon>
+                                </svg>
+                                <span>Play</span>
+                            </button>
+                            <button id="midi-pause" class="midi-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="6" y="4" width="4" height="16"></rect>
+                                    <rect x="14" y="4" width="4" height="16"></rect>
+                                </svg>
+                                Pause
+                            </button>
+                            <button id="midi-stop" class="midi-btn">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                </svg>
+                                Stop
+                            </button>
+                        </div>
+                        <div class="midi-time">
+                            <span id="midi-position">0:00 / 0:00</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -149,12 +277,20 @@
             <div id="keyboard"></div>
         </div>
         
+        <!-- UI Toggle Button -->
+        <button id="ui-toggle" title="Hide UI (V key)">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+        </button>
+        
         <!-- Info Panel (moved to top-left area) -->
         <div id="info">
             <h3>Wave Generator</h3>
             <p>Keys A-' to play notes • Z/X to change octave</p>
             <p>Spacebar to toggle sustain • B/Esc to clear notes</p>
-            <p>C to toggle rotations • Drag to look around</p>
+            <p>C to toggle rotations • V to hide UI • Drag to look around</p>
         </div>
         
         <!-- Sustain Indicator -->
@@ -168,6 +304,7 @@
     
     <!-- Project scripts -->
     <script src="js/audio.js"></script>
+    <script src="js/midi.js"></script>
     <script src="js/lissajous.js"></script>
     <script src="js/keyboard.js"></script>
     <script src="js/controls.js"></script>

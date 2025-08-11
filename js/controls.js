@@ -188,5 +188,231 @@ class CameraControls {
     }
 }
 
+// MIDI file controls
+class MIDIControls {
+    constructor() {
+        this.midiParser = new MIDIParser();
+        this.midiPlayer = null;
+        this.fileInput = null;
+        this.playButton = null;
+        this.pauseButton = null;
+        this.stopButton = null;
+        this.positionDisplay = null;
+        this.trackInfo = null;
+        this.controlsContainer = null;
+        
+        this.init();
+    }
+    
+    init() {
+        this.setupElements();
+        this.setupEventListeners();
+        
+        // Initialize MIDI player when audio engine is ready
+        if (window.audioEngine) {
+            this.midiPlayer = new MIDIPlayer(window.audioEngine);
+            this.setupPlayerEvents();
+        } else {
+            // Wait for audio engine to be initialized
+            setTimeout(() => this.init(), 100);
+        }
+    }
+    
+    setupElements() {
+        this.fileInput = document.getElementById('midi-file-input');
+        this.playButton = document.getElementById('midi-play');
+        this.pauseButton = document.getElementById('midi-pause');
+        this.stopButton = document.getElementById('midi-stop');
+        this.positionDisplay = document.getElementById('midi-position');
+        this.trackInfo = document.getElementById('midi-track-info');
+        this.controlsContainer = document.getElementById('midi-controls');
+        this.midiPanel = document.getElementById('midi-panel');
+        this.midiToggle = document.getElementById('midi-toggle');
+        this.trackSelect = document.getElementById('midi-track-select');
+        this.trackDropdown = document.getElementById('midi-track-dropdown');
+    }
+    
+    setupEventListeners() {
+        // MIDI panel toggle
+        if (this.midiToggle) {
+            this.midiToggle.addEventListener('click', () => {
+                this.midiPanel.classList.toggle('collapsed');
+            });
+        }
+        
+        if (this.fileInput) {
+            this.fileInput.addEventListener('change', this.handleFileSelect.bind(this));
+        }
+        
+        if (this.trackDropdown) {
+            this.trackDropdown.addEventListener('change', (e) => {
+                if (this.midiPlayer) {
+                    this.midiPlayer.applyTrackFilter(e.target.value);
+                    const trackInfo = this.midiPlayer.getTrackInfo();
+                    this.displayTrackInfo(trackInfo);
+                }
+            });
+        }
+        
+        if (this.playButton) {
+            this.playButton.addEventListener('click', () => {
+                if (this.midiPlayer) {
+                    this.midiPlayer.play();
+                    this.updateButtonStates();
+                }
+            });
+        }
+        
+        if (this.pauseButton) {
+            this.pauseButton.addEventListener('click', () => {
+                if (this.midiPlayer) {
+                    this.midiPlayer.pause();
+                    this.updateButtonStates();
+                }
+            });
+        }
+        
+        if (this.stopButton) {
+            this.stopButton.addEventListener('click', () => {
+                if (this.midiPlayer) {
+                    this.midiPlayer.stop();
+                    this.updateButtonStates();
+                }
+            });
+        }
+    }
+    
+    setupPlayerEvents() {
+        if (this.midiPlayer) {
+            this.midiPlayer.onTimeUpdate = (currentTime, duration) => {
+                this.updateTimeDisplay(currentTime, duration);
+            };
+            
+            this.midiPlayer.onEnd = () => {
+                this.updateButtonStates();
+            };
+        }
+    }
+    
+    async handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const events = this.midiParser.parse(arrayBuffer);
+            
+            if (this.midiPlayer) {
+                const trackInfo = this.midiPlayer.load(events);
+                this.populateTrackSelector(this.midiPlayer.getAvailableTracks());
+                this.displayTrackInfo(trackInfo);
+                this.showControls();
+            }
+            
+        } catch (error) {
+            console.error('Error parsing MIDI file:', error);
+            alert('Error loading MIDI file. Please ensure it\'s a valid MIDI file.');
+        }
+    }
+    
+    populateTrackSelector(availableTracks) {
+        if (!this.trackDropdown) return;
+        
+        // Clear existing options except "All Tracks"
+        this.trackDropdown.innerHTML = '<option value="all">All Tracks</option>';
+        
+        // Add track options
+        availableTracks.forEach(({ track, noteCount }) => {
+            const option = document.createElement('option');
+            option.value = track.toString();
+            option.textContent = `Track ${track + 1} (${noteCount} notes)`;
+            this.trackDropdown.appendChild(option);
+        });
+        
+        // Show track selector if there are multiple tracks
+        if (this.trackSelect && availableTracks.length > 1) {
+            this.trackSelect.style.display = 'block';
+        }
+    }
+    
+    displayTrackInfo(info) {
+        if (this.trackInfo) {
+            const duration = this.formatTime(info.duration);
+            const noteRange = this.getMidiNoteName(info.noteRange.min) + 
+                            ' - ' + this.getMidiNoteName(info.noteRange.max);
+            
+            let trackDisplay = '';
+            if (info.selectedTrack === 'all') {
+                trackDisplay = `All ${info.tracks} tracks`;
+            } else {
+                trackDisplay = `Track ${parseInt(info.selectedTrack) + 1}`;
+            }
+            
+            this.trackInfo.innerHTML = `
+                <div><strong>Duration:</strong> ${duration}</div>
+                <div><strong>Playing:</strong> ${trackDisplay}</div>
+                <div><strong>Notes:</strong> ${info.noteCount}${info.totalNoteCount !== info.noteCount ? ` of ${info.totalNoteCount}` : ''}</div>
+                <div><strong>Range:</strong> ${noteRange}</div>
+            `;
+            this.trackInfo.parentElement.style.display = 'block';
+        }
+    }
+    
+    showControls() {
+        if (this.controlsContainer) {
+            this.controlsContainer.style.display = 'block';
+        }
+    }
+    
+    updateButtonStates() {
+        if (!this.midiPlayer) return;
+        
+        const isPlaying = this.midiPlayer.isPlaying && !this.midiPlayer.isPaused;
+        const isPaused = this.midiPlayer.isPaused;
+        
+        if (this.playButton) {
+            this.playButton.disabled = isPlaying;
+            
+            // Update button text using the span element
+            const textSpan = this.playButton.querySelector('span');
+            if (textSpan) {
+                textSpan.textContent = isPaused ? 'Resume' : 'Play';
+            }
+        }
+        
+        if (this.pauseButton) {
+            this.pauseButton.disabled = !isPlaying;
+        }
+        
+        if (this.stopButton) {
+            this.stopButton.disabled = !isPlaying && !isPaused;
+        }
+        
+        console.log('Button states updated - Playing:', isPlaying, 'Paused:', isPaused);
+    }
+    
+    updateTimeDisplay(currentTime, duration) {
+        if (this.positionDisplay) {
+            const current = this.formatTime(currentTime);
+            const total = this.formatTime(duration);
+            this.positionDisplay.textContent = `${current} / ${total}`;
+        }
+    }
+    
+    formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${minutes}:${secs.toString().padStart(2, '0')}`;
+    }
+    
+    getMidiNoteName(midiNote) {
+        const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        const octave = Math.floor(midiNote / 12) - 1;
+        const note = noteNames[midiNote % 12];
+        return `${note}${octave}`;
+    }
+}
+
 // Export for use in main.js
 window.CameraControls = CameraControls;
+window.MIDIControls = MIDIControls;

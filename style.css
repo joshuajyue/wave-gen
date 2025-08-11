@@ -318,7 +318,7 @@ input:focus {
 #stats-panel {
     position: absolute;
     top: 20px;
-    left: 20px;
+    left: 320px;
     background: rgba(0, 0, 0, 0.9);
     border-radius: 12px;
     backdrop-filter: blur(15px);
@@ -459,7 +459,269 @@ input:focus {
     font-weight: 700;
 }
 
-/* Responsive */
+/* MIDI Controls Styling */
+#midi-controls {
+    margin-top: 8px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#midi-controls button {
+    background: rgba(71, 172, 254, 0.2);
+    border: 1px solid rgba(71, 172, 254, 0.4);
+    color: #4facfe;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+#midi-controls button:hover:not(:disabled) {
+    background: rgba(71, 172, 254, 0.3);
+    border-color: #4facfe;
+}
+
+#midi-controls button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+#midi-position {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-left: 8px;
+}
+
+#midi-file-input {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    padding: 6px;
+    border-radius: 6px;
+    font-size: 12px;
+    width: 100%;
+}
+
+#midi-file-input::file-selector-button {
+    background: rgba(71, 172, 254, 0.2);
+    border: 1px solid rgba(71, 172, 254, 0.4);
+    color: #4facfe;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    margin-right: 8px;
+}
+
+#midi-file-input::file-selector-button:hover {
+    background: rgba(71, 172, 254, 0.3);
+}
+
+#midi-track-info {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.3;
+}
+
+#midi-track-info div {
+    margin: 2px 0;
+}
+
+#midi-track-info strong {
+    color: #4facfe;
+}
+
+/* MIDI Panel Styles */
+#midi-panel {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    width: 280px;
+    background: rgba(15, 15, 15, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    transition: all 0.3s ease;
+    font-size: 13px;
+}
+
+#midi-panel.collapsed {
+    width: 50px;
+    height: 50px;
+    overflow: hidden;
+}
+
+#midi-toggle {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    color: #ffffff;
+    transition: color 0.2s ease;
+    z-index: 1001;
+}
+
+#midi-toggle:hover {
+    color: #4facfe;
+}
+
+#midi-content {
+    padding: 50px 20px 20px 20px;
+    transition: opacity 0.3s ease;
+}
+
+#midi-panel.collapsed #midi-content {
+    opacity: 0;
+    pointer-events: none;
+}
+
+#midi-content h4 {
+    margin: 0 0 15px 0;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.midi-category {
+    margin-bottom: 15px;
+}
+
+.midi-item {
+    margin-bottom: 12px;
+}
+
+.midi-item label {
+    display: block;
+    color: #cccccc;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.midi-item input[type="file"] {
+    width: 100%;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 12px;
+}
+
+.midi-item input[type="file"]::-webkit-file-upload-button {
+    background: #4facfe;
+    border: none;
+    border-radius: 4px;
+    color: #ffffff;
+    padding: 4px 8px;
+    margin-right: 8px;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.midi-buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.midi-btn {
+    flex: 1;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.midi-btn:hover {
+    background: rgba(79, 172, 254, 0.3);
+    border-color: #4facfe;
+}
+
+.midi-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.midi-btn:disabled:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.midi-time {
+    text-align: center;
+    color: #aaaaaa;
+    font-size: 12px;
+    font-family: 'Courier New', monospace;
+}
+
+#midi-track-info {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 12px;
+}
+
+#midi-track-info div {
+    margin-bottom: 4px;
+    color: #cccccc;
+}
+
+#midi-track-info div:last-child {
+    margin-bottom: 0;
+}
+
+/* UI Toggle Button */
+#ui-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    padding: 12px;
+    color: #ffffff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    z-index: 1001;
+}
+
+#ui-toggle:hover {
+    background: rgba(79, 172, 254, 0.2);
+    border-color: #4facfe;
+    color: #4facfe;
+}
+
+/* Hidden UI state */
+body.ui-hidden #settings-panel,
+body.ui-hidden #midi-panel,
+body.ui-hidden #stats-panel,
+body.ui-hidden #info,
+body.ui-hidden #sustain-indicator {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+}
+
+/* Mobile adjustments */
 @media (max-width: 768px) {
     #settings-panel {
         right: 10px;
@@ -513,4 +775,72 @@ input:focus {
         padding: 8px 12px;
         font-size: 11px;
     }
+    
+    #midi-controls {
+        flex-direction: column;
+        gap: 6px;
+    }
+    
+    #midi-controls button {
+        padding: 8px 16px;
+        font-size: 13px;
+    }
+    
+    #midi-panel {
+        top: 10px;
+        left: 10px;
+        width: 260px;
+    }
+    
+    #midi-panel.collapsed {
+        width: 40px;
+        height: 40px;
+    }
+    
+    #midi-toggle {
+        top: 10px;
+        left: 10px;
+        width: 20px;
+        height: 20px;
+    }
+    
+    .midi-btn {
+        padding: 6px 8px;
+        font-size: 10px;
+    }
+    
+    #ui-toggle {
+        bottom: 15px;
+        right: 15px;
+        padding: 10px;
+    }
+}
+
+.midi-item select {
+    width: 100%;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: #ffffff;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.midi-item select:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.midi-item select:focus {
+    outline: none;
+    border-color: #4facfe;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.midi-item select option {
+    background: #1a1a1a;
+    color: #ffffff;
+    padding: 8px;
 }

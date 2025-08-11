@@ -138,8 +138,20 @@ class AudioEngine {
         }
     }
     
-    // Start playing a MIDI note
-    startNote(midiNote) {
+    // Start playing a MIDI note with optional velocity
+    playNote(midiNote, velocity = 0.5) {
+        // If note is already playing, crossfade to prevent clicking
+        if (this.oscillators.has(midiNote)) {
+            const { oscillator: oldOscillator, gainNode: oldGainNode } = this.oscillators.get(midiNote);
+            
+            // Fade out the old oscillator quickly
+            oldGainNode.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + 0.003);
+            oldOscillator.stop(this.audioContext.currentTime + 0.003);
+            
+            // Remove from map immediately and start new note
+            this.oscillators.delete(midiNote);
+        }
+        
         const frequency = this.midiToFrequency(midiNote);
         const oscillator = this.audioContext.createOscillator();
         const gainNode = this.audioContext.createGain();
@@ -147,9 +159,9 @@ class AudioEngine {
         oscillator.type = 'sine';
         oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
         
-        // Smooth attack
+        // Smooth attack with velocity control
         gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
-        gainNode.gain.linearRampToValueAtTime(0.5, this.audioContext.currentTime + 0.01);
+        gainNode.gain.linearRampToValueAtTime(velocity, this.audioContext.currentTime + 0.003);
         
         oscillator.connect(gainNode);
         gainNode.connect(this.masterGain);
@@ -158,13 +170,25 @@ class AudioEngine {
         
         this.oscillators.set(midiNote, { oscillator, gainNode, frequency });
     }
-    
+
+    // Start playing a MIDI note (called by keyboard)
+    startNote(midiNote) {
+        this.playNote(midiNote, 0.5);
+    }
+
+    // Stop all currently playing notes
+    stopAllNotes() {
+        for (const [midiNote] of this.oscillators) {
+            this.stopNote(midiNote);
+        }
+    }
+
     // Stop playing a MIDI note
     stopNote(midiNote) {
         if (this.oscillators.has(midiNote)) {
             const { oscillator, gainNode } = this.oscillators.get(midiNote);
-            gainNode.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + 0.01);
-            oscillator.stop(this.audioContext.currentTime + 0.01);
+            gainNode.gain.linearRampToValueAtTime(0, this.audioContext.currentTime + 0.005);
+            oscillator.stop(this.audioContext.currentTime + 0.005);
             this.oscillators.delete(midiNote);
         }
     }
