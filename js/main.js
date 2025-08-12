@@ -276,6 +276,21 @@ class WaveGenerator {
             }
         });
         
+        // Handle FPS toggle
+        const fpsToggle = document.getElementById('fps-toggle');
+        const fpsCounter = document.getElementById('fps-counter');
+        if (fpsToggle && fpsCounter) {
+            fpsToggle.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    fpsCounter.classList.remove('hidden');
+                    this.startFpsCounter();
+                } else {
+                    fpsCounter.classList.add('hidden');
+                    this.stopFpsCounter();
+                }
+            });
+        }
+        
         // Handle t range
         tRange.addEventListener('input', (e) => {
             const value = parseFloat(e.target.value);
@@ -301,8 +316,6 @@ class WaveGenerator {
         const lissajousThicknessValue = document.getElementById('lissajous-thickness-value');
         const lissajousGlowIntensity = document.getElementById('lissajous-glow-intensity');
         const lissajousGlowIntensityValue = document.getElementById('lissajous-glow-intensity-value');
-        const lissajousColorMode = document.getElementById('lissajous-color-mode');
-        const monoColorControls = document.getElementById('mono-color-controls');
         const lissajousMonoHue = document.getElementById('lissajous-mono-hue');
         const lissajousMonoHueValue = document.getElementById('lissajous-mono-hue-value');
         
@@ -320,6 +333,25 @@ class WaveGenerator {
             lissajousBreathingToggle.addEventListener('change', (e) => {
                 if (window.lissajousGenerator) {
                     window.lissajousGenerator.setBreathingEnabled(e.target.checked);
+                }
+            });
+        }
+        
+        // Lissajous animation speed (only one slider)
+        const lissajousAnimationSpeed = document.getElementById('lissajous-animation-speed');
+        const lissajousAnimationSpeedValue = document.getElementById('lissajous-animation-speed-value');
+        if (lissajousAnimationSpeed && lissajousAnimationSpeedValue) {
+            // Sync slider and label with generator value on init
+            if (window.lissajousGenerator) {
+                const animSpeed = window.lissajousGenerator.animationSpeed;
+                lissajousAnimationSpeed.value = animSpeed;
+                lissajousAnimationSpeedValue.textContent = parseFloat(animSpeed).toFixed(1);
+            }
+            lissajousAnimationSpeed.addEventListener('input', (e) => {
+                const value = parseFloat(e.target.value);
+                lissajousAnimationSpeedValue.textContent = value.toFixed(1);
+                if (window.lissajousGenerator) {
+                    window.lissajousGenerator.setAnimationSpeed(value);
                 }
             });
         }
@@ -355,20 +387,25 @@ class WaveGenerator {
             });
         }
         
-        // Color mode
-        if (lissajousColorMode && monoColorControls) {
-            lissajousColorMode.addEventListener('change', (e) => {
-                const mode = e.target.value;
-                if (mode === 'mono') {
-                    monoColorControls.style.display = 'block';
-                } else {
-                    monoColorControls.style.display = 'none';
-                }
-                if (window.lissajousGenerator) {
-                    window.lissajousGenerator.setColorMode(mode);
+        // Color mode - Updated for radio buttons
+        const colorModeRadios = document.querySelectorAll('input[name="color-mode"]');
+        
+        colorModeRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    const mode = e.target.value;
+                    const monoColorControls = document.getElementById('mono-color-controls');
+                    if (mode === 'mono') {
+                        if (monoColorControls) monoColorControls.style.display = 'block';
+                    } else {
+                        if (monoColorControls) monoColorControls.style.display = 'none';
+                    }
+                    if (window.lissajousGenerator) {
+                        window.lissajousGenerator.setColorMode(mode);
+                    }
                 }
             });
-        }
+        });
         
         // Mono color hue
         if (lissajousMonoHue && lissajousMonoHueValue) {
@@ -549,6 +586,24 @@ class WaveGenerator {
         }
     }
     
+    startFpsCounter() {
+        if (this.fpsInterval) return; // Already running
+        
+        this.fpsInterval = setInterval(() => {
+            const fpsValue = document.getElementById('fps-value');
+            if (fpsValue) {
+                fpsValue.textContent = this.stats.fps.toFixed(0);
+            }
+        }, 500); // Update every 500ms
+    }
+    
+    stopFpsCounter() {
+        if (this.fpsInterval) {
+            clearInterval(this.fpsInterval);
+            this.fpsInterval = null;
+        }
+    }
+
     updateStats() {
         // Audio stats
         const activeNotes = window.virtualKeyboard ? window.virtualKeyboard.getActiveNotes().length : 0;
@@ -571,10 +626,12 @@ class WaveGenerator {
         const curveCount = window.lissajousGenerator ? window.lissajousGenerator.getActiveCurveCount() : 0;
         const triangleCount = curveCount * 1000 + (this.particleSystem && this.particleSystem.visible ? 200 : 0);
         const tRange = window.lissajousGenerator ? window.lissajousGenerator.tRange : 4.0;
+        const animSpeed = window.lissajousGenerator ? window.lissajousGenerator.animationSpeed : 1.5;
         
         document.getElementById('stat-triangles').textContent = triangleCount;
         document.getElementById('stat-curves').textContent = curveCount;
         document.getElementById('stat-t-range').textContent = tRange.toFixed(1);
+        document.getElementById('stat-anim-speed').textContent = animSpeed.toFixed(1);
         
         // Camera stats
         if (this.controls) {

@@ -1,3 +1,18 @@
+/* Lissajous Animation Speed Slider */
+#lissajous-animation-speed {
+    width: 85px;
+    margin: 0 10px;
+    accent-color: #4facfe;
+    cursor: pointer;
+}
+#lissajous-animation-speed-value {
+    font-size: 12px;
+    color: #aaa;
+    min-width: 35px;
+    display: inline-block;
+    font-family: 'Courier New', monospace;
+    font-weight: 500;
+}
 * {
     margin: 0;
     padding: 0;
@@ -459,6 +474,35 @@ input:focus {
     font-weight: 700;
 }
 
+/* FPS Counter */
+#fps-counter {
+    position: absolute;
+    top: 20px;
+    right: 340px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #4facfe;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid rgba(79, 172, 254, 0.3);
+    backdrop-filter: blur(10px);
+    z-index: 999;
+    transition: all 0.3s ease;
+}
+
+#fps-counter.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-10px);
+}
+
+#fps-value {
+    color: #ffffff;
+    font-weight: 700;
+}
+
 /* MIDI Controls Styling */
 #midi-controls {
     margin-top: 8px;
@@ -539,7 +583,7 @@ input:focus {
     position: fixed;
     top: 20px;
     left: 20px;
-    width: 280px;
+    width: 340px;
     background: rgba(15, 15, 15, 0.95);
     border: 1px solid rgba(255, 255, 255, 0.15);
     border-radius: 12px;
@@ -714,7 +758,8 @@ body.ui-hidden #settings-panel,
 body.ui-hidden #midi-panel,
 body.ui-hidden #stats-panel,
 body.ui-hidden #info,
-body.ui-hidden #sustain-indicator {
+body.ui-hidden #sustain-indicator,
+body.ui-hidden #fps-counter {
     opacity: 0;
     pointer-events: none;
     transform: translateY(-10px);
@@ -843,4 +888,100 @@ body.ui-hidden #sustain-indicator {
     background: #1a1a1a;
     color: #ffffff;
     padding: 8px;
+}
+
+/* Color Mode Selector Styling */
+.color-mode-selector {
+    display: flex;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.color-mode-selector input[type="radio"] {
+    display: none;
+}
+
+.color-mode-btn {
+    flex: 1;
+    padding: 8px 12px;
+    text-align: center;
+    cursor: pointer;
+    background: transparent;
+    color: #ccc;
+    font-size: 12px;
+    transition: all 0.3s ease;
+    justify-content: center;
+    border: none;
+}
+
+.color-mode-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+}
+
+.color-mode-selector input[type="radio"]:checked + .color-mode-btn {
+    background: #4facfe;
+    color: #fff;
+    font-weight: 600;
+}
+
+/* MIDI Progress Bar Styling */
+.midi-progress-container {
+    position: relative;
+    width: 100%;
+    height: 20px;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#midi-progress {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    cursor: pointer;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+}
+
+#midi-progress::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #4facfe;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+#midi-progress::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #4facfe;
+    cursor: pointer;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.midi-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4facfe, #667eea);
+    border-radius: inherit;
+    width: 0%;
+    transition: width 0.1s ease;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
 }

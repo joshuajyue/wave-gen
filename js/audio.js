@@ -67,20 +67,25 @@ class AudioEngine {
     // Convert MIDI note to just intonation frequency
     midiToJustFrequency(midiNote) {
         // Get octave and note within octave
-        const octave = Math.floor(midiNote / 12);
+        let octave = Math.floor(midiNote / 12);
         const noteInOctave = midiNote % 12;
-        
+
         // Calculate offset from root key
-        let offsetFromRoot = (noteInOctave - this.rootKey + 12) % 12;
-        
+        let offsetFromRoot = noteInOctave - this.rootKey;
+        let wrappedOffset = (offsetFromRoot + 12) % 12;
+
+        // If the note is below the root key, use the previous octave
+        if (offsetFromRoot < 0) {
+            octave -= 1;
+        }
+
         // Get ratio for this note
-        const ratio = this.justRatios[offsetFromRoot];
-        
-        // Calculate the frequency using the same octave system as equal temperament
-        // Start with the root key frequency in the same octave as the target note
+        const ratio = this.justRatios[wrappedOffset];
+
+        // Calculate the frequency using the correct octave
         const rootMidiInSameOctave = octave * 12 + this.rootKey;
         const baseFreq = 440 * Math.pow(2, (rootMidiInSameOctave - 69) / 12);
-        
+
         return baseFreq * ratio;
     }
     

@@ -230,6 +230,8 @@ class MIDIControls {
         this.midiToggle = document.getElementById('midi-toggle');
         this.trackSelect = document.getElementById('midi-track-select');
         this.trackDropdown = document.getElementById('midi-track-dropdown');
+        this.progressBar = document.getElementById('midi-progress');
+        this.progressFill = document.querySelector('.midi-progress-fill');
     }
     
     setupEventListeners() {
@@ -279,6 +281,32 @@ class MIDIControls {
                     this.updateButtonStates();
                 }
             });
+        }
+
+        // Progress bar seeking
+        if (this.progressBar) {
+            this.isDraggingProgress = false;
+            this.progressBar.addEventListener('mousedown', () => { this.isDraggingProgress = true; });
+            this.progressBar.addEventListener('touchstart', () => { this.isDraggingProgress = true; });
+            this.progressBar.addEventListener('input', (e) => {
+                // While dragging, update the bar and fill only from user input
+                const value = parseFloat(e.target.value);
+                this.updateProgressBar(value);
+            });
+            this.progressBar.addEventListener('change', (e) => {
+                // On release, seek to the new position and allow playback updates again
+                this.isDraggingProgress = false;
+                // Stop any currently playing notes
+                if (window.waveGenerator && typeof window.waveGenerator.clearAllNotes === 'function') {
+                    window.waveGenerator.clearAllNotes();
+                }
+                if (this.midiPlayer && this.midiPlayer.duration > 0) {
+                    const percentage = parseFloat(e.target.value) / 100;
+                    this.midiPlayer.seek(percentage);
+                }
+            });
+            this.progressBar.addEventListener('mouseup', () => { this.isDraggingProgress = false; });
+            this.progressBar.addEventListener('touchend', () => { this.isDraggingProgress = false; });
         }
     }
     
@@ -396,6 +424,29 @@ class MIDIControls {
             const current = this.formatTime(currentTime);
             const total = this.formatTime(duration);
             this.positionDisplay.textContent = `${current} / ${total}`;
+        }
+
+        // Update progress bar
+        if (duration > 0) {
+            const percentage = (currentTime / duration) * 100;
+            this.updateProgressBar(percentage);
+        }
+    }
+
+    updateProgressBar(percentage) {
+        // Only update from playback if not dragging
+        if (!this.isDraggingProgress) {
+            if (this.progressBar) {
+                this.progressBar.value = percentage;
+                if (this.progressFill) {
+                    this.progressFill.style.width = `${percentage}%`;
+                }
+            }
+        } else {
+            // If dragging, just update the fill to match the thumb
+            if (this.progressFill && this.progressBar) {
+                this.progressFill.style.width = `${this.progressBar.value}%`;
+            }
         }
     }
     

@@ -131,6 +131,13 @@
                     </div>
                     <div class="setting-item">
                         <label>
+                            Animation Speed
+                            <input type="range" id="lissajous-animation-speed" min="0.0" max="5" step="0.1" value="1.5">
+                            <span id="lissajous-animation-speed-value">1.5</span>
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
                             <input type="checkbox" id="lissajous-glow-toggle">
                             Glow Effect
                         </label>
@@ -147,10 +154,14 @@
                     </div>
                     <div class="setting-item">
                         <label for="lissajous-color-mode">Color Mode:</label>
-                        <select id="lissajous-color-mode">
-                            <option value="multi">Multi-Color</option>
-                            <option value="mono">Mono-Color</option>
-                        </select>
+                        <div class="color-mode-selector" id="lissajous-color-mode">
+                            <input type="radio" id="color-multi" name="color-mode" value="multi" checked>
+                            <label for="color-multi" class="color-mode-btn">Multi</label>
+                            <input type="radio" id="color-mono" name="color-mode" value="mono">
+                            <label for="color-mono" class="color-mode-btn">Mono</label>
+                            <input type="radio" id="color-rgb" name="color-mode" value="rgb">
+                            <label for="color-rgb" class="color-mode-btn">RGB</label>
+                        </div>
                     </div>
                     <div class="setting-item" id="mono-color-controls" style="display: none;">
                         <label for="lissajous-mono-hue">Mono Color Hue:</label>
@@ -165,6 +176,12 @@
                         <label>
                             <input type="checkbox" id="stats-toggle">
                             Show Stats for Nerds
+                        </label>
+                    </div>
+                    <div class="setting-item">
+                        <label>
+                            <input type="checkbox" id="fps-toggle">
+                            Show FPS Counter
                         </label>
                     </div>
                 </div>
@@ -236,6 +253,10 @@
                             </button>
                         </div>
                         <div class="midi-time">
+                            <div class="midi-progress-container">
+                                <input type="range" id="midi-progress" min="0" max="100" value="0" step="0.1">
+                                <div class="midi-progress-fill"></div>
+                            </div>
                             <span id="midi-position">0:00 / 0:00</span>
                         </div>
                     </div>
@@ -262,6 +283,7 @@
                     <div class="stat-item">Triangles: <span id="stat-triangles">0</span></div>
                     <div class="stat-item">Curves: <span id="stat-curves">0</span></div>
                     <div class="stat-item">t Range: <span id="stat-t-range">4.0</span>π</div>
+                    <div class="stat-item">Anim Speed: <span id="stat-anim-speed">1.5</span>x</div>
                 </div>
                 <div class="stat-group">
                     <h5>Camera</h5>
@@ -296,6 +318,11 @@
         <!-- Sustain Indicator -->
         <div id="sustain-indicator" class="hidden">
             <span>SUSTAIN</span>
+        </div>
+        
+        <!-- FPS Counter -->
+        <div id="fps-counter" class="hidden">
+            <span id="fps-value">60</span> FPS
         </div>
     </div>
 

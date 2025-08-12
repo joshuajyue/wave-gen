@@ -6,10 +6,15 @@ class LissajousGenerator {
         this.rotationEnabled = true; // Default curve rotation enabled
         this.breathingEnabled = true; // Default breathing animation enabled
         this.lineThickness = 2; // Line thickness (1-10)
-        this.colorMode = 'multi'; // 'multi' or 'mono'
+        this.colorMode = 'multi'; // 'multi', 'mono', or 'rgb'
         this.monoColor = { h: 0.6, s: 0.8, l: 0.6 }; // Default mono color (blue)
         this.glowEnabled = false; // Glow effect
         this.glowIntensity = 1.0; // Glow intensity (0-2)
+        this.phase = 0; // For phase animation
+        this.lastPhaseUpdate = Date.now();
+        this.animationSpeed = 1.5; // Speed of phase movement
+        // Global rotation state for seamless transitions
+        this.globalRotation = { x: 0, y: 0, z: 0 };
     }
     
     // Set the t range for curve generation
@@ -58,13 +63,25 @@ class LissajousGenerator {
     // Set glow intensity (0-2)
     setGlowIntensity(intensity) {
         this.glowIntensity = Math.max(0, Math.min(2, intensity));
-        if (this.glowEnabled) {
-            this.regenerateActiveCurves();
-        }
+        this.regenerateActiveCurves();
+    }
+    
+    // Set animation speed
+    setAnimationSpeed(speed) {
+        this.animationSpeed = Math.max(0, Math.min(5, speed));
     }
     
     // Regenerate all active curves (called when t range changes)
     regenerateActiveCurves() {
+        // Remove all existing curves before regenerating
+        if (window.scene) {
+            for (const [key, curveData] of this.activeCurves) {
+                window.scene.remove(curveData.mesh);
+                curveData.mesh.geometry.dispose();
+                curveData.mesh.material.dispose();
+            }
+            this.activeCurves.clear();
+        }
         // Get current state and regenerate
         const currentFrequencies = window.audioEngine ? window.audioEngine.getCurrentFrequencies() : [];
         if (currentFrequencies.length > 0 && window.scene) {
@@ -101,9 +118,10 @@ class LissajousGenerator {
         const points = [];
         const numPoints = 2000;
         const scale = 5;
-        
+        // Animate phase for movement
+        const phaseShift = this.phase || 0;
         for (let i = 0; i < numPoints; i++) {
-            const t = (i / numPoints) * Math.PI * this.tRange;
+            const t = (i / numPoints) * Math.PI * this.tRange + phaseShift;
             
             // Base coordinates with primary frequency
             let x = scale * Math.sin(ratios.x * t);
@@ -127,6 +145,13 @@ class LissajousGenerator {
             hue = this.monoColor.h;
             saturation = this.monoColor.s;
             lightness = this.monoColor.l;
+        } else if (this.colorMode === 'rgb') {
+            // Animate hue over time
+            const now = Date.now();
+            const t = ((now / 1000) % 10) / 10; // cycle every 10s
+            hue = t;
+            saturation = 0.9;
+            lightness = 0.6;
         } else {
             // Multi-color mode - use frequency-based coloring
             hue = colors ? colors.h : this.calculateComplexHue(frequencies);
@@ -232,9 +257,9 @@ class LissajousGenerator {
     
     // Update curves for currently playing notes
     updateCurves(currentFrequencies, scene) {
-        // Create a key for the current chord
+        // Restore to original implementation: only regenerate when chord changes
         const chordKey = currentFrequencies.sort().join(',');
-        
+
         // Remove all curves that don't match current chord
         for (const [key, curveData] of this.activeCurves) {
             if (key !== chordKey) {
@@ -244,7 +269,7 @@ class LissajousGenerator {
                 this.activeCurves.delete(key);
             }
         }
-        
+
         // Add or update curve for current chord
         if (currentFrequencies.length > 0) {
             if (!this.activeCurves.has(chordKey)) {
@@ -254,14 +279,14 @@ class LissajousGenerator {
                     s: 0.8,
                     l: 0.6
                 };
-                
+
                 const newCurve = this.createCurve(currentFrequencies, colors);
                 if (newCurve) {
                     this.activeCurves.set(chordKey, newCurve);
                     scene.add(newCurve.mesh);
                 }
             }
-            
+
             // Animate the active curve
             const activeCurve = this.activeCurves.get(chordKey);
             if (activeCurve) {
@@ -272,22 +297,71 @@ class LissajousGenerator {
     
     // Animate a single curve
     animateCurve(curveData, time) {
-        const { mesh, ratios } = curveData;
-        
-        // Rotate the curve based on frequency ratios (if enabled)
-        if (this.rotationEnabled) {
-            mesh.rotation.x = time * 0.1 * ratios.x;
-            mesh.rotation.y = time * 0.15 * ratios.y;
-            mesh.rotation.z = time * 0.05 * ratios.z;
+        const { mesh, ratios, allFrequencies } = curveData;
+        // Animate phase for movement
+        const now = Date.now();
+        let dt = (now - this.lastPhaseUpdate) / 1000;
+        if (dt > 0.1) dt = 0.016; // Clamp to ~60fps if paused/tabbed out
+        this.phase += dt * this.animationSpeed;
+        this.lastPhaseUpdate = now;
+
+        // Regenerate geometry for phase animation
+        if (allFrequencies && mesh.geometry) {
+            const xFreqs = allFrequencies.filter((_, i) => i % 3 === 0);
+            const yFreqs = allFrequencies.filter((_, i) => i % 3 === 1);
+            const zFreqs = allFrequencies.filter((_, i) => i % 3 === 2);
+            const baseFreq = Math.min(...Object.values(curveData.frequencies));
+            const numPoints = 2000;
+            const scale = 5;
+            const phaseShift = this.phase || 0;
+            const points = [];
+            for (let i = 0; i < numPoints; i++) {
+                const t = (i / numPoints) * Math.PI * this.tRange + phaseShift;
+                let x = scale * Math.sin(ratios.x * t);
+                let y = scale * Math.sin(ratios.y * t + Math.PI / 4);
+                let z = scale * Math.sin(ratios.z * t + Math.PI / 2);
+                x += this.calculateInterference(xFreqs, t, baseFreq, scale * 0.3);
+                y += this.calculateInterference(yFreqs, t, baseFreq, scale * 0.3);
+                z += this.calculateInterference(zFreqs, t, baseFreq, scale * 0.3);
+                points.push(new THREE.Vector3(x, y, z));
+            }
+            if (mesh instanceof THREE.Mesh && mesh.geometry instanceof THREE.TubeGeometry) {
+                // For glow, recreate tube geometry
+                const newTube = new THREE.TubeGeometry(
+                    new THREE.CatmullRomCurve3(points),
+                    Math.floor(points.length / 4),
+                    this.lineThickness * 0.02,
+                    8,
+                    false
+                );
+                mesh.geometry.dispose();
+                mesh.geometry = newTube;
+            } else if (mesh instanceof THREE.Line && mesh.geometry instanceof THREE.BufferGeometry) {
+                // For normal, update points
+                mesh.geometry.setFromPoints(points);
+            }
         }
-        
+
+        // Increment global rotation based on animation speed
+        if (this.rotationEnabled) {
+            this.globalRotation.x += 0.1 * ratios.x * this.animationSpeed * dt;
+            this.globalRotation.y += 0.15 * ratios.y * this.animationSpeed * dt;
+            this.globalRotation.z += 0.05 * ratios.z * this.animationSpeed * dt;
+            mesh.rotation.x = this.globalRotation.x;
+            mesh.rotation.y = this.globalRotation.y;
+            mesh.rotation.z = this.globalRotation.z;
+        }
         // Subtle breathing effect (if enabled)
         if (this.breathingEnabled) {
             const breathe = 1 + 0.05 * Math.sin(time * 2);
             mesh.scale.setScalar(breathe);
         } else {
-            // Ensure scale is normalized when breathing is disabled
             mesh.scale.setScalar(1);
+        }
+        // For RGB mode, update color over time
+        if (this.colorMode === 'rgb' && mesh.material) {
+            const t = ((now / 1000) % 10) / 10;
+            mesh.material.color.setHSL(t, 0.9, 0.6);
         }
     }
     
