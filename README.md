@@ -2,6 +2,8 @@
 
 An interactive 3D Lissajous curve renderer with a virtual piano keyboard. Play notes and chords to generate beautiful wave patterns in 3D space that you can explore with mouse controls.
 
+**[Open the live demo](https://joshuajyue.github.io/wave-gen/)**
+
 ## Features
 
 - Real-time 3D Lissajous curve generation based on played notes
